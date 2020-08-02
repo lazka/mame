@@ -1,0 +1,48 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+
+  msys2:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: setup-msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: mingw-w64-x86_64-toolchain make
+
+      - name: Build
+        run: |
+          export MINGW64=/mingw64
+          make SUBTARGET=tiny PTR64=1 TOOLS=1 OPTIMIZE=3 IGNORE_GIT=1 -j6
+
+      - name: Test
+        run: |
+          ./mametiny64.exe -validate
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact
+          path: |
+            *.exe
+            artwork/
+            bgfx/
+            ctrlr/
+            docs/
+            hash/
+            hlsl/
+            ini/
+            language/
+            nl_examples/
+            plugins/
+            roms/
+            samples/
